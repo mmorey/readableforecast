@@ -1,6 +1,11 @@
 // Get the query parameters from the URL
 const urlParams = new URLSearchParams(window.location.search);
 
+// Check if a 'theme' query parameter is set to 'light'
+if (urlParams.get("theme") === "light") {
+  document.body.classList.add("light-theme"); // If it is, add a 'light-theme' class to the body
+}
+
 // List of allowed Weather Forecast Offices (WFO)
 const allowedLocations = [
   "AKQ",
