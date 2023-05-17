@@ -239,42 +239,30 @@ function hideIntro() {
 function renderAFD(afd) {
   hideIntro();
 
-  // Extract productText from the AFD object
   const productText = afd.productText;
 
-  // Some NWS notes come ahead of the first Synopsis heading. Let's use regex to grab that.
-  const [preSynopsisText, ...restText] = productText.split("SYNOPSIS");
+  const cleanedText = productText
+    .replace(/^(.*\n){4}/, "")
+    .replace(/Area Forecast Discussion/, "")
+    .replace(/National Weather Service.*\n.*\n.*\n/, "");
 
-  // Split the text by lines starting with '&&'
-  const sections = restText.join("SYNOPSIS").split(/\n(?=&&)/);
-
-  // Create the HTML containers
   const container = document.getElementById("afd-text");
-  const header = document.getElementById("header");
-
-  // Clear previous content
-  container.innerHTML = "";
-  header.innerHTML = "";
-
-  // Add pre-synopsis text as a paragraph so I can later remove it
-  const preSynopsisParagraph = document.createElement("p");
-  preSynopsisParagraph.classList.add("pre-synopsis");
-  preSynopsisParagraph.textContent = preSynopsisText.trim();
-  header.appendChild(preSynopsisParagraph);
-
-  // Add Synopsis as the first heading
-  const synopsisHeading = document.createElement("h2");
-  synopsisHeading.textContent = "SYNOPSIS";
-  container.appendChild(synopsisHeading);
+  const sections = cleanedText.split(/\n(?=&&|\.[A-Z]+\.\.\.)/);
 
   for (let section of sections) {
-    const match = /&&\s*\.?(.+?)\.\.\./.exec(section); // extract text between '&&' (with optional '.') and '...'
-    if (match) {
+    console.log(section);
+
+    section = section.replace("&&", "").trim(); // remove the "&&" from the section
+
+    const headingRegex = /^\.([A-Z\s]+)\.\.\./gm; // regex to match the heading
+
+    for (const match of section.matchAll(headingRegex)) {
       const heading = document.createElement("h2");
       heading.textContent = match[1].trim(); // use the extracted text as the heading
       container.appendChild(heading);
-      section = section.replace(/&&\s*\.?.+?\.\.\./, "").trim(); // remove the heading part from the section
+      section = section.replace(/\.([A-Z\s]+)\.\.\./gm, "").trim(); // remove the heading part from the section
     }
+
     const content = document.createElement("p");
     content.textContent = section.trim();
     container.appendChild(content);
