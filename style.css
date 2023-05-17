@@ -10,6 +10,10 @@ body {
     line-height: 1.8;
     text-shadow: 0 1px 0 #ffffff;
   }
+
+  header {
+    font-weight: bold;
+  }
   
   code {
     background: white;
@@ -26,6 +30,10 @@ body {
   }
   
   .pre-synopsis {
+    display: none;
+  }
+
+  #loading {
     display: none;
   }
   

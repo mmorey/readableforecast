@@ -1,19 +1,287 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0"/>
+    <meta
+      name="viewport"
+      content="width=device-width, height=device-height, initial-scale=1.0"
+    />
     <meta charset="utf-8" />
     <title>NWS Area Forecast Discussion</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
     <link rel="apple-touch-icon" sizes="180x180" href="nws.png" />
   </head>
   <body>
-    <header id="header"></header>
+    <header id="header"><h1>Readable Forecast</h1></header>
+    <div id="intro">
+      <p>
+        The
+        <a href="https://www.weather.gov" target="_blank"
+          >National Weather Service (NWS)</a
+        >
+        Area Forecast Discussions (AFD) are detailed weather forecasts from 122
+        NWS offices acros the USA. They offer insights into weather conditions
+        and the factors influencing them. However, their technical language and
+        formatting can make them hard to read, especially on mobile devices. For
+        example, here is the official
+        <a
+          href="https://www.weather.gov/wrh/TextProduct?product=afdsgx"
+          target="_blank"
+          >AFD for San Diego</a
+        >.
+      </p>
+      <p>
+        Readable Forecast simplifys and optimizes AFDs for
+        easy responsive viewing.
+      </p>
+
+      <div id="wfoSelector">
+        <select id="location-select">
+          <option selected disabled>Select an office</option>
+          <optgroup label="Alabama">
+            <option value="BMX">BMX - Birmingham</option>
+            <option value="MOB">MOB - Mobile</option>
+          </optgroup>
+          <optgroup label="Alaska">
+            <option value="AFC">AFC - Anchorage</option>
+            <option value="AFG">AFG - Fairbanks</option>
+            <option value="AJK">AJK - Juneau</option>
+          </optgroup>
+          <optgroup label="Arkansas">
+            <option value="LZK">LZK - Little Rock</option>
+          </optgroup>
+          <optgroup label="Arizona">
+            <option value="FGZ">FGZ - Flagstaff</option>
+            <option value="PSR">PSR - Phoenix</option>
+          </optgroup>
+          <optgroup label="California">
+            <option value="EKA">EKA - Eureka</option>
+            <option value="LOX">LOX - Los Angeles/Oxnard</option>
+            <option value="STO">STO - Sacramento</option>
+            <option value="SGX">SGX - San Diego</option>
+            <option value="MTR">MTR - San Francisco Bay Area/Monterey</option>
+            <option value="HNX">HNX - San Joaquin Valley/Hanford</option>
+          </optgroup>
+          <optgroup label="Colorado">
+            <option value="BOU">BOU - Boulder</option>
+            <option value="GJT">GJT - Grand Junction</option>
+            <option value="PUB">PUB - Pueblo</option>
+          </optgroup>
+          <optgroup label="Florida">
+            <option value="JAX">JAX - Jacksonville</option>
+            <option value="MLB">MLB - Melbourne</option>
+            <option value="MFL">MFL - Miami - South Florida</option>
+            <option value="TLH">TLH - Tallahassee</option>
+            <option value="TBW">TBW - Tampa Bay Area</option>
+          </optgroup>
+          <optgroup label="Georgia">
+            <option value="FFC">FFC - Peachtree City</option>
+          </optgroup>
+          <optgroup label="Guam">
+            <option value="GAM">GAM - Tiyan</option>
+          </optgroup>
+          <optgroup label="Hawaii">
+            <option value="HFO">HFO - Honolulu</option>
+          </optgroup>
+          <optgroup label="Idaho">
+            <option value="BOI">BOI - Boise</option>
+            <option value="PIH">PIH - Pocatello</option>
+          </optgroup>
+          <optgroup label="Illinois">
+            <option value="LOT">LOT - Chicago</option>
+            <option value="ILX">ILX - Lincoln</option>
+          </optgroup>
+          <optgroup label="Indiana">
+            <option value="IND">IND - Indianapolis</option>
+            <option value="IWX">IWX - Northern Indiana</option>
+          </optgroup>
+          <optgroup label="Iowa">
+            <option value="DMX">DMX - Des Moines</option>
+            <option value="DVN">DVN - Quad Cities</option>
+          </optgroup>
+          <optgroup label="Kansas">
+            <option value="DDC">DDC - Dodge City</option>
+            <option value="GLD">GLD - Goodland</option>
+            <option value="TOP">TOP - Topeka</option>
+            <option value="ICT">ICT - Wichita</option>
+          </optgroup>
+          <optgroup label="Kentucky">
+            <option value="JKL">JKL - Jackson</option>
+            <option value="LMK">LMK - Louisville</option>
+            <option value="PAH">PAH - Paducah</option>
+          </optgroup>
+          <optgroup label="Louisiana">
+            <option value="LCH">LCH - Lake Charles</option>
+            <option value="LIX">LIX - New Orleans/Baton Rouge</option>
+            <option value="SHV">SHV - Shreveport</option>
+          </optgroup>
+          <optgroup label="Maine">
+            <option value="CAR">CAR - Caribou</option>
+            <option value="GYX">GYX - Gray/Portland</option>
+          </optgroup>
+          <optgroup label="Maryland">
+            <option value="LWX">LWX - Baltimore, MD/Washington D.C.</option>
+          </optgroup>
+          <optgroup label="Massachusetts">
+            <option value="BOX">BOX - Boston/Taunton</option>
+          </optgroup>
+          <optgroup label="Michigan">
+            <option value="DTX">DTX - Detroit/Pontiac</option>
+            <option value="APX">APX - Gaylord</option>
+            <option value="GRR">GRR - Grand Rapids</option>
+            <option value="MQT">MQT - Marquette</option>
+          </optgroup>
+          <optgroup label="Minnesota">
+            <option value="MPX">MPX - Twin Cities/Chanhassen</option>
+            <option value="DLH">DLH - Duluth</option>
+          </optgroup>
+          <optgroup label="Mississippi">
+            <option value="JAN">JAN - Jackson</option>
+          </optgroup>
+          <optgroup label="Missouri">
+            <option value="EAX">EAX - Kansas City</option>
+            <option value="SGF">SGF - Springfield</option>
+            <option value="LSX">LSX - St. Louis</option>
+          </optgroup>
+          <optgroup label="Montana">
+            <option value="BYZ">BYZ - Billings</option>
+            <option value="GGW">GGW - Glasgow</option>
+            <option value="TFX">TFX - Great Falls</option>
+            <option value="MSO">MSO - Missoula</option>
+          </optgroup>
+          <optgroup label="Nebraska">
+            <option value="GID">GID - Hastings</option>
+            <option value="LBF">LBF - North Platte</option>
+            <option value="OAX">OAX - Omaha/Valley</option>
+          </optgroup>
+          <optgroup label="Nevada">
+            <option value="LKN">LKN - Elko</option>
+            <option value="VEF">VEF - Las Vegas</option>
+            <option value="REV">REV - Reno</option>
+          </optgroup>
+          <optgroup label="New Mexico">
+            <option value="ABQ">ABQ - Albuquerque</option>
+          </optgroup>
+          <optgroup label="New York">
+            <option value="ALY">ALY - Albany</option>
+            <option value="BGM">BGM - Binghamton</option>
+            <option value="BUF">BUF - Buffalo</option>
+            <option value="OKX">OKX - New York</option>
+          </optgroup>
+          <optgroup label="North Carolina">
+            <option value="MHX">MHX - Newport/Morehead City</option>
+            <option value="RAH">RAH - Raleigh</option>
+            <option value="ILM">ILM - Wilmington</option>
+          </optgroup>
+          <optgroup label="North Dakota">
+            <option value="BIS">BIS - Bismarck</option>
+            <option value="FGF">FGF - Grand Forks</option>
+          </optgroup>
+          <optgroup label="Ohio">
+            <option value="CLE">CLE - Cleveland</option>
+            <option value="ILN">ILN - Wilmington</option>
+          </optgroup>
+          <optgroup label="Oklahoma">
+            <option value="OUN">OUN - Norman</option>
+            <option value="TSA">TSA - Tulsa</option>
+          </optgroup>
+          <optgroup label="Oregon">
+            <option value="MFR">MFR - Medford</option>
+            <option value="PDT">PDT - Pendleton</option>
+            <option value="PQR">PQR - Portland</option>
+          </optgroup>
+          <optgroup label="Pennsylvania">
+            <option value="PHI">PHI - Philadelphia/Mt Holly</option>
+            <option value="PBZ">PBZ - Pittsburgh</option>
+            <option value="CTP">CTP - State College</option>
+          </optgroup>
+          <optgroup label="Puerto Rico">
+            <option value="SJU">SJU - San Juan</option>
+          </optgroup>
+          <optgroup label="South Carolina">
+            <option value="CHS">CHS - Charleston</option>
+            <option value="CAE">CAE - Columbia</option>
+            <option value="GSP">GSP - Greenville-Spartanburg</option>
+          </optgroup>
+          <optgroup label="South Dakota">
+            <option value="ABR">ABR - Aberdeen</option>
+            <option value="UNR">UNR - Rapid City</option>
+            <option value="FSD">FSD - Sioux Falls</option>
+          </optgroup>
+          <optgroup label="Tennessee">
+            <option value="MRX">MRX - Morristown</option>
+            <option value="MEG">MEG - Memphis</option>
+            <option value="BNA">BNA - Nashville</option>
+          </optgroup>
+          <optgroup label="Texas">
+            <option value="AMA">AMA - Amarillo</option>
+            <option value="EWX">EWX - Austin/San Antonio</option>
+            <option value="BRO">BRO - Brownsville</option>
+            <option value="CRP">CRP - Corpus Christi</option>
+            <option value="FWD">FWD - Dallas/Fort Worth</option>
+            <option value="ELP">ELP - El Paso</option>
+            <option value="HGX">HGX - Houston/Galveston</option>
+            <option value="LUB">LUB - Lubbock</option>
+            <option value="MAF">MAF - Midland/Odessa</option>
+            <option value="SJT">SJT - San Angelo</option>
+          </optgroup>
+          <optgroup label="Utah">
+            <option value="SLC">SLC - Salt Lake City</option>
+          </optgroup>
+          <optgroup label="Vermont">
+            <option value="BTV">BTV - Burlington</option>
+          </optgroup>
+          <optgroup label="Virginia">
+            <option value="RNK">RNK - Blacksburg</option>
+            <option value="AKQ">AKQ - Wakefield</option>
+          </optgroup>
+          <optgroup label="Washington">
+            <option value="SEW">SEW - Seattle</option>
+            <option value="OTX">OTX - Spokane</option>
+          </optgroup>
+          <optgroup label="West Virginia">
+            <option value="RLX">RLX - Charleston</option>
+          </optgroup>
+          <optgroup label="Wisconsin">
+            <option value="GRB">GRB - Green Bay</option>
+            <option value="ARX">ARX - La Crosse</option>
+            <option value="MKX">MKX - Milwaukee/Sullivan</option>
+          </optgroup>
+          <optgroup label="Wyoming">
+            <option value="CYS">CYS - Cheyenne</option>
+            <option value="RIW">RIW - Riverton</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <p>
+        You can customize your forecast by adding URL parameters. For example,
+        to choose a specific NWS office, you can use the "wfo" parameter, like
+        so:
+        <a href="https://readableforecast.com/?wfo=SGX"
+          >readableforecast.com/?wfo=SGX</a
+        >
+        for San Diego.
+      </p>
+      <p>
+        To force a light or dark theme, use the "theme" parameter. For example,
+        to force light mode:
+        <a href="https://readableforecast.com/?wfo=SGX&theme=light"
+          >readableforecast.com/?wfo=SGX&theme=light</a
+        >.
+      </p>
+    </div>
     <div id="loading">Loading...</div>
     <div id="afd-text"></div>
-    <div id="wfoSelector">
-      <select id="location-select"></select>
-    </div>
+    <footer>
+      <p>
+        <a href="/">Readable Forecast</a> was created by
+        <a href="https://matthewmorey.com" target="_blank">Matthew Morey</a> and
+        is
+        <a href="https://github.com/mmorey/readableforecast" target="_blank"
+          >open source</a
+        >.
+      </p>
+    </footer>
   </body>
   <script src="script.js"></script>
 </html>

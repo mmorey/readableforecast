@@ -1,10 +1,17 @@
-// Get the query parameters from the URL
+// Get the parameters from the URL
 const urlParams = new URLSearchParams(window.location.search);
 
 // Check if a 'theme' query parameter is set to 'light'
 if (urlParams.get("theme") === "light") {
   document.body.classList.add("light-theme"); // If it is, add a 'light-theme' class to the body
 }
+
+// Handle location change via the select element
+const locationSelect = document.getElementById("location-select");
+locationSelect.addEventListener("change", (event) => {
+  const newLocation = event.target.value;
+  window.location.search = `?wfo=${newLocation}`;
+});
 
 // List of allowed Weather Forecast Offices (WFO)
 const allowedLocations = [
@@ -141,120 +148,172 @@ const allowedLocations = [
   "ONP",
 ];
 
-// Get the location from the URL
-const wfo = urlParams.get("location") || "SGX"; // default to 'SGX' if no query parameter is provided
+// Get the NWS Weather Forecast Office from the URL Parameters
+const wfo = urlParams.get("wfo");
 
-// Check if the provided location is in the allowed list
-if (!allowedLocations.includes(wfo.toUpperCase())) {
-  // If the provided location is not valid, you could redirect the user to a default location or display an error message
-  console.error(`Invalid location: ${wfo}`);
-  // For example, default to 'SGX'
-  wfo = "SGX";
+// Check if the wfo query parameter is set and in the allowed list
+if (wfo && allowedLocations.includes(wfo.toUpperCase())) {
+  // If the provided location is valid, set the location to the query value
+  fetchLatestAFDMetaObjects(wfo)
+    .then((response) => {
+      if (response instanceof Error) {
+        console.error(`Failed to fetch AFDs: ${response.message}`);
+      } else {
+        return fetchAFD(response[0]["@id"]);
+      }
+    })
+    .then((afd) => {
+      if (afd instanceof Error) {
+        console.error(`Failed to fetch AFD: ${afd.message}`);
+      } else {
+        return renderAFD(afd);
+      }
+    });
 }
 
-// Get the location select element
-const locationSelect = document.getElementById("location-select");
+// This code fetches the most recent AFDs from the NWS API (https://api.weather.gov/products/types/AFD/locations/)
+// and returns them as an array
+async function fetchLatestAFDMetaObjects(wfo) {
+  try {
+    const response = await fetch(
+      `https://api.weather.gov/products/types/AFD/locations/${wfo}`,
+      {
+        headers: {
+          "User-Agent": "readableforecast.com",
+        },
+      }
+    );
 
-// Populate the select element with the allowed locations
-allowedLocations.forEach((location) => {
-  const option = document.createElement("option");
-  option.value = location;
-  option.text = location;
-  locationSelect.appendChild(option);
-});
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-// Set the selected option to the current location
-locationSelect.value = wfo;
+    const data = await response.json();
+    const avaiableAFDs = data["@graph"];
 
-// Handle location change
-locationSelect.addEventListener("change", (event) => {
-  const newLocation = event.target.value;
-  // Refresh the page with the new location as a query parameter
-  window.location.search = `?location=${newLocation}`;
-});
+    // Check if the '@graph' property is not present, empty, or not an array
+    if (
+      !avaiableAFDs ||
+      !Array.isArray(avaiableAFDs) ||
+      avaiableAFDs.length === 0
+    ) {
+      throw new Error("No available AFDs found");
+    }
 
-// get the list of area forecast discussions for the given NWS Office
-fetch(`https://api.weather.gov/products/types/AFD/locations/${wfo}`)
-  .then((response) => response.json())
+    console.log(avaiableAFDs);
+    return avaiableAFDs;
+  } catch (error) {
+    console.error(`Failed to fetch AFDs: ${error.message}`);
+    return error;
+  }
+}
 
-  // now let's parse the JSON and get the most recent one
-  .then((data) => {
-    const mostRecentAFDUrl = data["@graph"][0]["@id"];
-    fetch(mostRecentAFDUrl)
-      .then((response) => response.text())
-      .then((text) => {
-        // the JSON delivers the text of the discussion in a productText key as a single long paragraph with /n line breaks. I want to clean that up and create headings that I can style.
-        const productText = JSON.parse(text).productText;
+// fetchAFD is an async function that fetches the AFD for a given URL.
+// It returns the AFD as JSON.
+async function fetchAFD(afdURL) {
+  try {
+    const response = await fetch(afdURL, {
+      headers: {
+        "User-Agent": "readableforecast.com",
+      },
+    });
 
-        // Some NWS notes come ahead of the first Synopsis heading. I'm going to use regex to grab that.
-        const [preSynopsisText, ...restText] = productText.split("SYNOPSIS");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-        // I also want to split the text by lines starting with '&&'
-        const sections = restText.join("SYNOPSIS").split(/\n(?=&&)/);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Failed to fetch AFD: ${error.message}`);
+    return error;
+  }
+}
 
-        // Create the HTML containers
-        const container = document.getElementById("afd-text");
-        const header = document.getElementById("header");
+// Hides the intro div
+function hideIntro() {
+  const intro = document.getElementById("intro");
+  intro.style.display = "none";
+}
 
-        // Add pre-synopsis text as a paragraph so I can later remove it
-        const preSynopsisParagraph = document.createElement("p");
-        preSynopsisParagraph.classList.add("pre-synopsis");
-        preSynopsisParagraph.textContent = preSynopsisText.trim();
-        header.appendChild(preSynopsisParagraph);
+function renderAFD(afd) {
+  hideIntro();
 
-        // Add Synopsis as the first heading
-        const synopsisHeading = document.createElement("h2");
-        synopsisHeading.textContent = "SYNOPSIS";
-        container.appendChild(synopsisHeading);
+  // Extract productText from the AFD object
+  const productText = afd.productText;
 
-        for (let section of sections) {
-          const match = /&&\s*\.?(.+?)\.\.\./.exec(section); // extract text between '&&' (with optional '.') and '...'
-          if (match) {
-            const heading = document.createElement("h2");
-            heading.textContent = match[1].trim(); // use the extracted text as the heading
-            container.appendChild(heading);
-            section = section.replace(/&&\s*\.?.+?\.\.\./, "").trim(); // remove the heading part from the section
-          }
-          const content = document.createElement("p");
-          content.textContent = section.trim();
-          container.appendChild(content);
-        }
+  // Some NWS notes come ahead of the first Synopsis heading. Let's use regex to grab that.
+  const [preSynopsisText, ...restText] = productText.split("SYNOPSIS");
 
-        // Get the issuance time value from the JSON
-        const forecastTime = JSON.parse(text).issuanceTime;
-        const localTime = new Date(forecastTime).toLocaleString("en-US");
+  // Split the text by lines starting with '&&'
+  const sections = restText.join("SYNOPSIS").split(/\n(?=&&)/);
 
-        // Wrap the time in a paragraph
-        const timeParagraph = document.createElement("p");
+  // Create the HTML containers
+  const container = document.getElementById("afd-text");
+  const header = document.getElementById("header");
 
-        // Add a class for styling
-        timeParagraph.classList.add("time");
+  // Clear previous content
+  container.innerHTML = "";
+  header.innerHTML = "";
 
-        // Write the header
-        // Create a link element
-        const locationLink = document.createElement("a");
+  // Add pre-synopsis text as a paragraph so I can later remove it
+  const preSynopsisParagraph = document.createElement("p");
+  preSynopsisParagraph.classList.add("pre-synopsis");
+  preSynopsisParagraph.textContent = preSynopsisText.trim();
+  header.appendChild(preSynopsisParagraph);
 
-        // Set the link's destination
-        locationLink.href = `https://www.weather.gov/${wfo}/`;
+  // Add Synopsis as the first heading
+  const synopsisHeading = document.createElement("h2");
+  synopsisHeading.textContent = "SYNOPSIS";
+  container.appendChild(synopsisHeading);
 
-        // Set the link's text
-        locationLink.textContent = wfo;
+  for (let section of sections) {
+    const match = /&&\s*\.?(.+?)\.\.\./.exec(section); // extract text between '&&' (with optional '.') and '...'
+    if (match) {
+      const heading = document.createElement("h2");
+      heading.textContent = match[1].trim(); // use the extracted text as the heading
+      container.appendChild(heading);
+      section = section.replace(/&&\s*\.?.+?\.\.\./, "").trim(); // remove the heading part from the section
+    }
+    const content = document.createElement("p");
+    content.textContent = section.trim();
+    container.appendChild(content);
+  }
 
-        // Set the link's target to open in a new tab
-        locationLink.target = "_blank";
+  // Get the issuance time value from the JSON
+  const forecastTime = afd.issuanceTime;
+  const localTime = new Date(forecastTime).toLocaleString("en-US");
 
-        // Add the text and link to the paragraph
-        timeParagraph.appendChild(
-          document.createTextNode("Area forecast discussion issued by ")
-        );
-        timeParagraph.appendChild(locationLink);
-        timeParagraph.appendChild(document.createTextNode(` at ${localTime}.`));
+  // Wrap the time in a paragraph
+  const timeParagraph = document.createElement("p");
 
-        // Append to the header element
-        header.appendChild(timeParagraph);
+  // Add a class for styling
+  timeParagraph.classList.add("time");
 
-        // Remove the loading element
-        const loadingElement = document.getElementById("loading");
-        loadingElement.style.display = "none";
-      });
-  });
+  // Write the header
+  // Create a link element
+  const locationLink = document.createElement("a");
+
+  // Set the link's destination
+  locationLink.href = `https://www.weather.gov/${wfo}/`;
+
+  // Set the link's text
+  locationLink.textContent = wfo;
+
+  // Set the link's target to open in a new tab
+  locationLink.target = "_blank";
+
+  // Add the text and link to the paragraph
+  timeParagraph.appendChild(
+    document.createTextNode("Area forecast discussion issued by ")
+  );
+  timeParagraph.appendChild(locationLink);
+  timeParagraph.appendChild(document.createTextNode(` at ${localTime}.`));
+
+  // Append to the header element
+  header.appendChild(timeParagraph);
+
+  // Remove the loading element
+  const loadingElement = document.getElementById("loading");
+  loadingElement.style.display = "none";
+}
