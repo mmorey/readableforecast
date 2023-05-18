@@ -1,86 +1,137 @@
+/* Default styling is light theme based */
 body {
-    margin: 5% auto;
-    padding: 0 5%;
-    max-width: 650px;
-    background: #f2f2f2;
-    color: #444444;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif;
-    font-size: 16px;
-    line-height: 1.8;
-    text-shadow: 0 1px 0 #ffffff;
+  margin: 5% auto;
+  padding: 0 5%;
+  max-width: 650px;
+  background: #f2f2f2;
+  color: #444444;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  text-shadow: 0 1px 0 #ffffff;
+}
+
+header {
+  font-weight: bold;
+}
+
+a {
+  border-bottom: 1px solid #444444;
+  color: #444444;
+  text-decoration: none;
+}
+
+a:hover {
+  border-bottom: 0;
+}
+
+h2 {
+  margin-top: 2%;
+  border-bottom: 1px solid #d1d0d0;
+  word-wrap: break-word;
+}
+
+#loading {
+  display: none;
+}
+
+/* Selector formatting */
+#wfoSelector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#wfoSelector > * {
+  margin: 0 10px;
+}
+
+@media (max-width: 650px) {
+  #wfoSelector {
+    flex-direction: column;
+  }
+}
+
+/* Table formatting */
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th,
+table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+table th {
+  background-color: #444444;
+  color: #f2f2f2;
+  text-shadow: none;
+}
+
+/* Force light theme */
+body.light-theme {
+  background: #f2f2f2;
+  color: #444444;
+  text-shadow: 0 1px 0 #ffffff;
+}
+
+body.light-theme a {
+  color: #444444;
+  border-bottom: 1px solid #444444;
+}
+
+body.light-theme h2 {
+  border-bottom: 1px solid #d1d0d0;
+}
+
+/* Fore dark theme */
+body.dark-theme {
+  background: #222;
+  color: #ddd;
+  text-shadow: 0 1px 0 #000;
+}
+
+body.dark-theme a {
+  color: #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+body.dark-theme h2 {
+  border-bottom: 1px solid #888;
+}
+
+body.dark-theme table th {
+  background-color: #f2f2f2;
+  color: #444444;
+  text-shadow: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-theme) {
+    background: #222;
+    color: #ddd;
+    text-shadow: 0 1px 0 #000;
   }
 
-  header {
-    font-weight: bold;
-  }
-  
-  code {
-    background: white;
-  }
-  
-  a {
-    border-bottom: 1px solid #444444;
-    color: #444444;
-    text-decoration: none;
-  }
-  
-  a:hover {
-    border-bottom: 0;
-  }
-  
-  .pre-synopsis {
-    display: none;
+  body:not(.light-theme) a {
+    color: #ddd;
+    border-bottom: 1px solid #ddd;
   }
 
-  #loading {
-    display: none;
+  body:not(.light-theme) h2 {
+    border-bottom: 1px solid #888;
   }
-  
-  h2 {
-    margin-top: 2%;
-    border-bottom: 1px solid #d1d0d0;
-    word-wrap: break-word;
-  }
-  
-  body.light-theme {
-    background: #f2f2f2;
+
+  body:not(.light-theme) table th {
+    background-color: #f2f2f2;
     color: #444444;
-    text-shadow: 0 1px 0 #ffffff;
+    text-shadow: none;
   }
-  
-  body.light-theme code {
-    background: white;
-  }
-  
-  body.light-theme a {
-    color: #444444;
-    border-bottom: 1px solid #444444;
-  }
-  
-  body.light-theme h2 {
-    border-bottom: 1px solid #d1d0d0;
-  }
-  
-  @media (prefers-color-scheme: dark) {
-    body:not(.light-theme) {
-      background: #222;
-      color: #ddd;
-      text-shadow: 0 1px 0 #000;
-    }
-  
-    body:not(.light-theme) code {
-      background: #444;
-    }
-  
-    body:not(.light-theme) a {
-      color: #ddd;
-      border-bottom: 1px solid #ddd;
-    }
-  
-    body:not(.light-theme) h2 {
-      border-bottom: 1px solid #888;
-    }
-  }
-  
-  
+}

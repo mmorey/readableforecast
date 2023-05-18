@@ -1,17 +1,4 @@
-// Get the parameters from the URL
-const urlParams = new URLSearchParams(window.location.search);
-
-// Check if a 'theme' query parameter is set to 'light'
-if (urlParams.get("theme") === "light") {
-  document.body.classList.add("light-theme"); // If it is, add a 'light-theme' class to the body
-}
-
-// Handle location change via the select element
-const locationSelect = document.getElementById("location-select");
-locationSelect.addEventListener("change", (event) => {
-  const newLocation = event.target.value;
-  window.location.search = `?wfo=${newLocation}`;
-});
+// Global Constants
 
 // List of allowed Weather Forecast Offices (WFO)
 const allowedLocations = [
@@ -148,6 +135,48 @@ const allowedLocations = [
   "ONP",
 ];
 
+const headers = {
+  headers: {
+    "User-Agent": "readableforecast.com",
+  },
+};
+
+// End Global Constants
+
+// Get the parameters from the URL
+const urlParams = new URLSearchParams(window.location.search);
+
+// Check if the theme query parameter is set to 'light' or 'dark'
+var theme = urlParams.get("theme");
+if (theme === "light") {
+  document.body.classList.add("light-theme");
+} else if (theme === "dark") {
+  document.body.classList.add("dark-theme");
+}
+
+// Handle location change via the select element
+const locationSelect = document.getElementById("location-select");
+locationSelect.addEventListener("change", (event) => {
+  const newLocation = event.target.value;
+  window.location.search = `?wfo=${newLocation}`;
+});
+
+// Handle location change via the location button
+const locationButton = document.getElementById("location-button");
+locationButton.addEventListener("click", (event) => {
+  navigator.geolocation.getCurrentPosition((position) => {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    fetchWFOFromLocation(lat, lon).then((wfo) => {
+      if (wfo instanceof Error) {
+        console.error(`Failed to fetch WFO: ${wfo.message}`);
+      } else {
+        window.location.search = `?wfo=${wfo}`;
+      }
+    });
+  });
+});
+
 // Get the NWS Weather Forecast Office from the URL Parameters
 const wfo = urlParams.get("wfo");
 
@@ -177,11 +206,7 @@ async function fetchLatestAFDMetaObjects(wfo) {
   try {
     const response = await fetch(
       `https://api.weather.gov/products/types/AFD/locations/${wfo}`,
-      {
-        headers: {
-          "User-Agent": "readableforecast.com",
-        },
-      }
+      headers
     );
 
     if (!response.ok) {
@@ -200,7 +225,6 @@ async function fetchLatestAFDMetaObjects(wfo) {
       throw new Error("No available AFDs found");
     }
 
-    console.log(avaiableAFDs);
     return avaiableAFDs;
   } catch (error) {
     console.error(`Failed to fetch AFDs: ${error.message}`);
@@ -212,11 +236,7 @@ async function fetchLatestAFDMetaObjects(wfo) {
 // It returns the AFD as JSON.
 async function fetchAFD(afdURL) {
   try {
-    const response = await fetch(afdURL, {
-      headers: {
-        "User-Agent": "readableforecast.com",
-      },
-    });
+    const response = await fetch(afdURL, headers);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -226,6 +246,31 @@ async function fetchAFD(afdURL) {
     return data;
   } catch (error) {
     console.error(`Failed to fetch AFD: ${error.message}`);
+    return error;
+  }
+}
+
+// Function to fetch WFO based on geolocation coordinates
+async function fetchWFOFromLocation(lat, lon) {
+  try {
+    const response = await fetch(
+      `https://api.weather.gov/points/${lat},${lon}`,
+      headers
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const wfo = data.properties.cwa;
+
+    if (!wfo || !allowedLocations.includes(wfo.toUpperCase())) {
+      throw new Error("No valid WFO found");
+    }
+    return wfo;
+  } catch (error) {
+    console.error(`Failed to fetch WFO: ${error.message}`);
     return error;
   }
 }
