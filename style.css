@@ -75,6 +75,12 @@ table th {
   text-shadow: none;
 }
 
+/* Pre blocks */
+PRE {
+  overflow-x: auto;
+}
+
+
 /* Force light theme */
 body.light-theme {
   background: #f2f2f2;

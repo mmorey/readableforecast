@@ -182,6 +182,10 @@ const wfo = urlParams.get("wfo");
 
 // Check if the wfo query parameter is set and in the allowed list
 if (wfo && allowedLocations.includes(wfo.toUpperCase())) {
+  // Show the loading element
+  const loadingElement = document.getElementById("loading");
+  loadingElement.style.display = "block";
+
   // If the provided location is valid, set the location to the query value
   fetchLatestAFDMetaObjects(wfo)
     .then((response) => {
@@ -275,6 +279,18 @@ async function fetchWFOFromLocation(lat, lon) {
   }
 }
 
+/**
+ * Creates an HTML element, adds a text node to it, and appends it to the specified container element
+ * @param {string} tag - HTML tag name for the element to be created
+ * @param {string} text - Text to be added as a text node to the created element
+ * @param {HTMLElement} container - HTML element to which the created element will be appended
+ */
+function createAndAppendElement(tag, text, container) {
+  const element = document.createElement(tag); // create the specified HTML element
+  element.textContent = text; // add text node to created element using the specified text
+  container.appendChild(element); // append created element to specified container element
+}
+
 // Hides the intro div
 function hideIntro() {
   const intro = document.getElementById("intro");
@@ -284,66 +300,78 @@ function hideIntro() {
 function renderAFD(afd) {
   hideIntro();
 
+  const container = document.getElementById("afd-text");
   const productText = afd.productText;
 
-  const cleanedText = productText
-    .replace(/^(.*\n){4}/, "")
-    .replace(/Area Forecast Discussion/, "")
-    .replace(/National Weather Service.*\n.*\n.*\n/, "");
+  if (!container || !productText) {
+    console.error("Invalid input");
+    return;
+  }
 
-  const container = document.getElementById("afd-text");
-  const sections = cleanedText.split(/\n(?=&&|\.[A-Z]+\.\.\.)/);
+  // We are processing the AFD line by line
+  const lines = productText.split("\n");
+  // console.log(lines);
 
-  for (let section of sections) {
-    console.log(section);
+  let currentParagraphContent = "";
+  let currentPreContent = "";
 
-    section = section.replace("&&", "").trim(); // remove the "&&" from the section
+  lines.splice(0, 8); // Removes the first 8 lines as this is unnecessary information
 
-    const headingRegex = /^\.([A-Z\s]+)\.\.\./gm; // regex to match the heading
-
-    for (const match of section.matchAll(headingRegex)) {
-      const heading = document.createElement("h2");
-      heading.textContent = match[1].trim(); // use the extracted text as the heading
-      container.appendChild(heading);
-      section = section.replace(/\.([A-Z\s]+)\.\.\./gm, "").trim(); // remove the heading part from the section
+  for (let line of lines) {
+    // If we have a line with "&&", we have reached the end of the section
+    // so we can skip it
+    const nwsSectionEnding = line.match(/^&&$/);
+    if (nwsSectionEnding) {
+      continue;
     }
 
-    const content = document.createElement("p");
-    content.textContent = section.trim();
-    container.appendChild(content);
+    // If the currentPreContent is not empty or we detected a new pre block we are in
+    // a preformatted section
+    if (/\s{2,}/.test(line) && /\d/.test(line)) {
+      currentPreContent += line + "\n";
+      continue;
+    } else if (currentPreContent.length > 0) {
+      createAndAppendElement("pre", currentPreContent, container);
+      currentPreContent = "";
+      continue;
+    }
+
+    // Headings are of the format .HEADING...
+    const headingRegex = /^\.([A-Z\s\/]+)\.\.\./;
+    const match = line.match(headingRegex);
+
+    // If we have a heading match or we have an empty line, we need to create a new
+    // paragraph and reset the currentParagraphContent
+    if (match || line.length === 0) {
+      createAndAppendElement("p", currentParagraphContent, container);
+      currentParagraphContent = "";
+    }
+
+    // If we have a heading match, we need to create a new heading
+    if (match) {
+      createAndAppendElement("h2", match[1].trim(), container);
+      line = line.replace(headingRegex, ""); // remove the heading part from the section
+    }
+
+    // Append the current line to the current paragraph content
+    currentParagraphContent += line + " ";
   }
 
   // Get the issuance time value from the JSON
   const forecastTime = afd.issuanceTime;
   const localTime = new Date(forecastTime).toLocaleString("en-US");
 
-  // Wrap the time in a paragraph
   const timeParagraph = document.createElement("p");
-
-  // Add a class for styling
   timeParagraph.classList.add("time");
-
-  // Write the header
-  // Create a link element
   const locationLink = document.createElement("a");
-
-  // Set the link's destination
   locationLink.href = `https://www.weather.gov/${wfo}/`;
-
-  // Set the link's text
-  locationLink.textContent = wfo;
-
-  // Set the link's target to open in a new tab
+  locationLink.textContent = wfo.toUpperCase();
   locationLink.target = "_blank";
-
-  // Add the text and link to the paragraph
   timeParagraph.appendChild(
     document.createTextNode("Area forecast discussion issued by ")
   );
   timeParagraph.appendChild(locationLink);
   timeParagraph.appendChild(document.createTextNode(` at ${localTime}.`));
-
-  // Append to the header element
   header.appendChild(timeParagraph);
 
   // Remove the loading element
