@@ -1,15 +1,27 @@
-/* Default styling is light theme based */
+:root {
+  /* Default light theme colors */
+  --background-color: rgb(247, 247, 247);
+  --font-color: rgb(55, 65, 81);
+  --link-color: rgb(17, 24, 39);
+  --link-border-color: rgb(17, 24, 39);
+  --h2-border-color: rgb(217, 217, 227);
+  --table-border-color: rgb(217, 217, 227);
+  --table-header-background-color: rgb(236, 236, 241);
+  --table-header-color: rgb(17, 24, 39);
+}
+
 body {
   margin: 5% auto;
   padding: 0 5%;
   max-width: 650px;
-  background: #f2f2f2;
-  color: #444444;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  background: var(--background-color);
+  color: var(--font-color);
+  font-family: Söhne, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    Ubuntu, Cantarell, Noto Sans, sans-serif, Helvetica Neue, Arial,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-variation-settings: normal;
   font-size: 16px;
   line-height: 1.8;
-  text-shadow: 0 1px 0 #ffffff;
 }
 
 header {
@@ -17,8 +29,8 @@ header {
 }
 
 a {
-  border-bottom: 1px solid #444444;
-  color: #444444;
+  border-bottom: 1px solid var(--link-border-color);
+  color: var(--link-color);
   text-decoration: none;
 }
 
@@ -28,15 +40,10 @@ a:hover {
 
 h2 {
   margin-top: 2%;
-  border-bottom: 1px solid #d1d0d0;
+  border-bottom: 1px solid var(--h2-border-color);
   word-wrap: break-word;
 }
 
-#loading {
-  display: none;
-}
-
-/* Selector formatting */
 #wfoSelector {
   display: flex;
   justify-content: center;
@@ -47,13 +54,6 @@ h2 {
   margin: 0 10px;
 }
 
-@media (max-width: 650px) {
-  #wfoSelector {
-    flex-direction: column;
-  }
-}
-
-/* Table formatting */
 .table-container {
   overflow-x: auto;
 }
@@ -65,79 +65,46 @@ table {
 
 table th,
 table td {
-  border: 1px solid #ddd;
+  border: 1px solid var(--table-border-color);
   padding: 8px;
 }
 
 table th {
-  background-color: #444444;
-  color: #f2f2f2;
-  text-shadow: none;
+  background-color: var(--table-header-background-color);
+  color: var(--table-header-color);
 }
 
-/* Pre blocks */
 PRE {
   overflow-x: auto;
 }
 
-
-/* Force light theme */
-body.light-theme {
-  background: #f2f2f2;
-  color: #444444;
-  text-shadow: 0 1px 0 #ffffff;
+@media (max-width: 650px) {
+  #wfoSelector {
+    flex-direction: column;
+  }
 }
 
-body.light-theme a {
-  color: #444444;
-  border-bottom: 1px solid #444444;
-}
-
-body.light-theme h2 {
-  border-bottom: 1px solid #d1d0d0;
-}
-
-/* Fore dark theme */
+/* Dark theme */
 body.dark-theme {
-  background: #222;
-  color: #ddd;
-  text-shadow: 0 1px 0 #000;
-}
-
-body.dark-theme a {
-  color: #ddd;
-  border-bottom: 1px solid #ddd;
-}
-
-body.dark-theme h2 {
-  border-bottom: 1px solid #888;
-}
-
-body.dark-theme table th {
-  background-color: #f2f2f2;
-  color: #444444;
-  text-shadow: none;
+  --background-color: rgb(68, 70, 83);
+  --font-color: rgb(209, 213, 219);
+  --link-color: rgb(255, 255, 255);
+  --link-border-color: rgb(255, 255, 255);
+  --h2-border-color: #888;
+  --table-border-color: rgb(217, 217, 217);
+  --table-header-background-color: rgb(102, 103, 114);
+  --table-header-color: rgb(255, 255, 255);
 }
 
 @media (prefers-color-scheme: dark) {
   body:not(.light-theme) {
-    background: #222;
-    color: #ddd;
-    text-shadow: 0 1px 0 #000;
-  }
-
-  body:not(.light-theme) a {
-    color: #ddd;
-    border-bottom: 1px solid #ddd;
-  }
-
-  body:not(.light-theme) h2 {
-    border-bottom: 1px solid #888;
-  }
-
-  body:not(.light-theme) table th {
-    background-color: #f2f2f2;
-    color: #444444;
-    text-shadow: none;
+    --background-color: rgb(68, 70, 83);
+    --font-color: rgb(209, 213, 219);
+    --link-color: rgb(255, 255, 255);
+    --link-border-color: rgb(255, 255, 255);
+    --h2-border-color: #888;
+    --table-border-color: rgb(217, 217, 217);
+    --table-header-background-color: rgb(102, 103, 114);
+    --table-header-color: rgb(255, 255, 255);
   }
 }
