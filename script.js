@@ -161,20 +161,48 @@ locationSelect.addEventListener("change", (event) => {
   window.location.search = `?wfo=${newLocation}`;
 });
 
+function showError(message) {
+  const errorElement = document.getElementById("error");
+  errorElement.textContent = message;
+  errorElement.style.display = "flex";
+}
+
 // Handle location change via the location button
 const locationButton = document.getElementById("location-button");
 locationButton.addEventListener("click", (event) => {
-  navigator.geolocation.getCurrentPosition((position) => {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-    fetchWFOFromLocation(lat, lon).then((wfo) => {
-      if (wfo instanceof Error) {
-        console.error(`Failed to fetch WFO: ${wfo.message}`);
-      } else {
-        window.location.search = `?wfo=${wfo}`;
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      fetchWFOFromLocation(lat, lon).then((wfo) => {
+        if (wfo instanceof Error) {
+          console.error(`Failed to fetch WFO: ${wfo.message}`);
+          showError(
+            "⛔️ Failed to find a Weather Forecast Office near you. Please manually select a location."
+          );
+        } else {
+          window.location.search = `?wfo=${wfo}`;
+        }
+      });
+    },
+    (error) => {
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          showError("⛔️ Location access was denied.");
+          break;
+        case error.POSITION_UNAVAILABLE:
+          showError("⛔️ Location information is unavailable.");
+          break;
+        case error.TIMEOUT:
+          showError("⛔️ The request to get user location timed out.");
+          break;
+        case error.UNKNOWN_ERROR:
+          showError("⛔️ An unknown error occurred.");
+          break;
       }
-    });
-  });
+    }
+  );
 });
 
 // Get the NWS Weather Forecast Office from the URL Parameters
@@ -218,6 +246,10 @@ function showLoadingState() {
   const loadingElement = document.getElementById("loading");
   loadingElement.style.display = "block";
 
+  // Hide the error element
+  const errorElement = document.getElementById("error");
+  errorElement.style.display = "none";
+
   // Hide the intro element
   const introElement = document.getElementById("intro");
   introElement.style.display = "none";
@@ -231,6 +263,10 @@ function showAFDState() {
   // Hide the loading element
   const loadingElement = document.getElementById("loading");
   loadingElement.style.display = "none";
+
+  // Hide the error element
+  const errorElement = document.getElementById("error");
+  errorElement.style.display = "none";
 
   // Hide the intro element
   const introElement = document.getElementById("intro");

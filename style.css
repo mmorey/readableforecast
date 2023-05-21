@@ -3,6 +3,7 @@
   --background-color: rgb(247, 247, 247);
   --font-color: rgb(55, 65, 81);
   --link-color: rgb(17, 24, 39);
+  --error-color: red;
   --link-border-color: rgb(17, 24, 39);
   --h2-border-color: rgb(217, 217, 227);
   --table-border-color: rgb(217, 217, 227);
@@ -58,6 +59,13 @@ h2 {
 
 #wfoSelector > * {
   margin: 0 10px;
+}
+
+#error {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  color: var(--error-color);
 }
 
 #loading {
