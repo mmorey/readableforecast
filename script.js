@@ -182,30 +182,79 @@ const wfo = urlParams.get("wfo");
 
 // Check if the wfo query parameter is set and in the allowed list
 if (wfo && allowedLocations.includes(wfo.toUpperCase())) {
+  showLoadingState();
+
+  (async () => {
+    try {
+      // Fetch the latest AFD meta objects for the given WFO
+      const response = await fetchLatestAFDMetaObjects(wfo);
+
+      if (response instanceof Error) {
+        console.error(`Failed to fetch AFDs: ${response.message}`);
+        return; // Stop execution if there's an error
+      }
+
+      // Fetch the AFD for the given ID
+      const afd = await fetchAFD(response[0]["@id"]);
+
+      if (afd instanceof Error) {
+        console.error(`Failed to fetch AFD: ${afd.message}`);
+        return; // Stop execution if there's an error
+      }
+
+      // Render the AFD
+      renderAFD(afd);
+
+      // If everything is successful, call `showAFDState()`
+      showAFDState();
+    } catch (error) {
+      console.error(`Error: ${error.message}`);
+    }
+  })();
+}
+
+function showLoadingState() {
   // Show the loading element
   const loadingElement = document.getElementById("loading");
   loadingElement.style.display = "block";
 
-  // If the provided location is valid, set the location to the query value
-  fetchLatestAFDMetaObjects(wfo)
-    .then((response) => {
-      if (response instanceof Error) {
-        console.error(`Failed to fetch AFDs: ${response.message}`);
-      } else {
-        return fetchAFD(response[0]["@id"]);
-      }
-    })
-    .then((afd) => {
-      if (afd instanceof Error) {
-        console.error(`Failed to fetch AFD: ${afd.message}`);
-      } else {
-        return renderAFD(afd);
-      }
-    });
+  // Hide the intro element
+  const introElement = document.getElementById("intro");
+  introElement.style.display = "none";
+
+  // Hide the AFD text element
+  const afdTextElement = document.getElementById("afd-text");
+  afdTextElement.style.display = "none";
 }
 
-// This code fetches the most recent AFDs from the NWS API (https://api.weather.gov/products/types/AFD/locations/)
-// and returns them as an array
+function showAFDState() {
+  // Hide the loading element
+  const loadingElement = document.getElementById("loading");
+  loadingElement.style.display = "none";
+
+  // Hide the intro element
+  const introElement = document.getElementById("intro");
+  introElement.style.display = "none";
+
+  // Hide the AFD text element
+  const afdTextElement = document.getElementById("afd-text");
+  afdTextElement.style.display = "block";
+}
+
+/**
+ * Asynchronously fetches the latest Area Forecast Discussion (AFD) metadata objects from the
+ * National Weather Service (NWS) API for a given Weather Forecast Office (WFO).
+ *
+ * @async
+ * @param {string} wfo - The code for the Weather Forecast Office (e.g., 'MIA' for Miami) whose AFDs are to be fetched.
+ * @returns {Promise<Object[]>} - A promise that resolves to an array of metadata objects for each AFD product available.
+ * Each object contains properties like the product's URL, issuance time, and other metadata.
+ * In case of an error during the fetch process, the promise is rejected and the error message is logged to the console.
+ *
+ * @throws Will throw an Error if the response from the NWS API is not OK (status code not in the range 200-299),
+ * or if the '@graph' property in the API response is not present, not an array, or an empty array.
+ * The error message will contain the HTTP status or a custom message indicating no available AFDs found.
+ */
 async function fetchLatestAFDMetaObjects(wfo) {
   try {
     const response = await fetch(
@@ -236,8 +285,18 @@ async function fetchLatestAFDMetaObjects(wfo) {
   }
 }
 
-// fetchAFD is an async function that fetches the AFD for a given URL.
-// It returns the AFD as JSON.
+/**
+ * Asynchronously fetches an Area Forecast Discussion (AFD) from the National Weather Service (NWS) API using a given URL.
+ *
+ * @async
+ * @param {string} afdURL - The URL of the AFD to be fetched.
+ * @returns {Promise<Object>} - A promise that resolves to an object representing the fetched AFD data.
+ * Each object contains properties like the AFD's text content, product type, issuance time, and other metadata.
+ * In case of an error during the fetch process, the promise is rejected and the error message is logged to the console.
+ *
+ * @throws Will throw an Error if the response from the NWS API is not OK (status code not in the range 200-299).
+ * The error message will contain the HTTP status.
+ */
 async function fetchAFD(afdURL) {
   try {
     const response = await fetch(afdURL, headers);
@@ -254,7 +313,18 @@ async function fetchAFD(afdURL) {
   }
 }
 
-// Function to fetch WFO based on geolocation coordinates
+/**
+ * Asynchronously fetches the Weather Forecast Office (WFO) code for a given location from the National Weather Service (NWS) API.
+ *
+ * @async
+ * @param {number} lat - The latitude of the location.
+ * @param {number} lon - The longitude of the location.
+ * @returns {Promise<string>} - A promise that resolves to a string representing the WFO code for the location.
+ * If the WFO code is not in the list of allowed locations, the promise will reject with an error.
+ *
+ * @throws Will throw an Error if the response from the NWS API is not OK (status code not in the range 200-299).
+ * The error message will contain the HTTP status. Will also throw an Error if the fetched WFO is not valid or is not included in the allowed locations.
+ */
 async function fetchWFOFromLocation(lat, lon) {
   try {
     const response = await fetch(
@@ -291,15 +361,7 @@ function createAndAppendElement(tag, text, container) {
   container.appendChild(element); // append created element to specified container element
 }
 
-// Hides the intro div
-function hideIntro() {
-  const intro = document.getElementById("intro");
-  intro.style.display = "none";
-}
-
 function renderAFD(afd) {
-  hideIntro();
-
   const container = document.getElementById("afd-text");
   const productText = afd.productText;
 
@@ -337,7 +399,7 @@ function renderAFD(afd) {
     }
 
     // Headings are of the format .HEADING...
-    const headingRegex = /^\.([A-Z\s\/]+)\.\.\./;
+    const headingRegex = /^\.([A-Z\s\/]+)\.\.\./i;
     const match = line.match(headingRegex);
 
     // If we have a heading match or we have an empty line, we need to create a new
@@ -373,8 +435,4 @@ function renderAFD(afd) {
   timeParagraph.appendChild(locationLink);
   timeParagraph.appendChild(document.createTextNode(` at ${localTime}.`));
   header.appendChild(timeParagraph);
-
-  // Remove the loading element
-  const loadingElement = document.getElementById("loading");
-  loadingElement.style.display = "none";
 }

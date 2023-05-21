@@ -54,6 +54,10 @@ h2 {
   margin: 0 10px;
 }
 
+#loading {
+  display: none;
+}
+
 .table-container {
   overflow-x: auto;
 }
