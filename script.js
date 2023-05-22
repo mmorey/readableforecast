@@ -435,7 +435,7 @@ function renderAFD(afd) {
     }
 
     // Headings are of the format .HEADING...
-    const headingRegex = /^\.([A-Z\s\/]+)\.\.\./i;
+    const headingRegex = /^\.([\w\s\/()-]+)\.\.\./i;
     const match = line.match(headingRegex);
 
     // If we have a heading match or we have an empty line, we need to create a new
